@@ -1,0 +1,82 @@
+group 'com.beibei.android'
+version '1.0-SNAPSHOT'
+
+// 直接通过task函数去创建
+task hello {
+    println 'hello world'
+}
+
+// 通过TaskContainer去创建
+project.tasks.create(name: 'hello2') {
+    println 'hello world2'
+}
+
+tasks.getByName('hello2') {
+    println 'hello world22'
+}
+
+task hello3 {
+    println 'in configuration phase'
+    doFirst {
+        println 'in execution phase and executed first'
+    }
+    doLast {
+        println 'in execution phase and executed last'
+    }
+}
+
+// doFirst、doLast可以指定多个。
+// << has deprecated in 4.x and removed in 5.0 version
+// doFirst、doLast可以对gradle中提供的已有的task进行扩展。
+hello3.doLast {
+    println 'doLast again' // 会插入到运行期的最后面
+}
+hello3.doFirst {
+    println 'doFirst again' // 会插入到运行期的最前面
+}
+
+// 自定义Task可以用Groovy、Java、Kotlin写
+// 自定义Task可以放在build.gradle中，也可以放到当前Project的buildSrc文件夹中，也可以单独建一个工程
+class Hello4 extends DefaultTask {
+
+    String message = 'This is hello4'
+
+    // @TaskAction 表示该Task要执行的动作,即在调用该Task时，hello()方法将被执行
+    @TaskAction
+    def hello(){
+        println "Hello world. $message"
+    }
+}
+
+// 通过task type 创建，类似于Java中的继承
+// task type一般在插件中用的比较多，
+task hello5(type:Hello4) {
+    message = 'This is hello5'
+}
+
+// 官方内置了很多task type，如Checkstyle、Copy、Delete、Jar、Zip、Upload等等
+task myCopy(type: Copy) {
+    from 'resources'
+    into 'target'
+    include('**/*.txt', '**/*.xml', '**/*.properties')
+}
+
+// deprecated，gradle 6.0 之后不支持overwrite，官方建议不要重名
+//task myCopy(overwrite: true) {
+//    println 'hello copy'
+//}
+
+// onlyIf跳过执行
+// ebabled = false 也可以跳过执行
+def hello6Enable = false
+task hello6 {
+    onlyIf {
+        hello6Enable
+    }
+    doLast {
+        println 'hello world 6'
+    }
+    enabled = hello6Enable
+}
+
+// task 执行顺序
