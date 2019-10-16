@@ -80,3 +80,12 @@ task hello6 {
 }
 
 // task 执行顺序
+https://docs.gradle.org/current/userguide/more_about_tasks.html#sec:ordering_tasks
+https://juejin.im/post/5c3077aee51d4551eb39fe7f
+
+https://www.jianshu.com/p/cd1a78dc8346
+https://blog.csdn.net/singwhatiwanna/article/details/78898113
+https://docs.gradle.org/current/dsl/org.gradle.api.Task.html
+https://docs.gradle.org/current/userguide/more_about_tasks.html#sec:ordering_tasks
+https://docs.gradle.org/current/userguide/tutorial_using_tasks.html#sec:task_dependencies
+https://docs.gradle.org/current/userguide/more_about_tasks.html#sec:lifecycle_tasks
