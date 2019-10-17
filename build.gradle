@@ -26,7 +26,6 @@ task hello3 {
 }
 
 // doFirst、doLast可以指定多个。
-// << has deprecated in 4.x and removed in 5.0 version
 // doFirst、doLast可以对gradle中提供的已有的task进行扩展。
 hello3.doLast {
     println 'doLast again' // 会插入到运行期的最后面
@@ -34,6 +33,10 @@ hello3.doLast {
 hello3.doFirst {
     println 'doFirst again' // 会插入到运行期的最前面
 }
+// << has deprecated in 4.x and removed in 5.0 version
+//hello3 << {
+//    println 'doLast again'
+//}
 
 // 自定义Task可以用Groovy、Java、Kotlin写
 // 自定义Task可以放在build.gradle中，也可以放到当前Project的buildSrc文件夹中，也可以单独建一个工程
@@ -80,12 +83,85 @@ task hello6 {
 }
 
 // task 执行顺序
-https://docs.gradle.org/current/userguide/more_about_tasks.html#sec:ordering_tasks
-https://juejin.im/post/5c3077aee51d4551eb39fe7f
+// 1. mustRunAfter & shouldRunAfter 约束执行顺序
+// shouldRunAfter 在遇到有依赖关系的Task时，会先遵循依赖关系。
+task taskA {
+    doLast {
+        println 'taskA'
+    }
+}
 
-https://www.jianshu.com/p/cd1a78dc8346
-https://blog.csdn.net/singwhatiwanna/article/details/78898113
-https://docs.gradle.org/current/dsl/org.gradle.api.Task.html
-https://docs.gradle.org/current/userguide/more_about_tasks.html#sec:ordering_tasks
-https://docs.gradle.org/current/userguide/tutorial_using_tasks.html#sec:task_dependencies
-https://docs.gradle.org/current/userguide/more_about_tasks.html#sec:lifecycle_tasks
+task taskB {
+    doLast {
+        println 'taskB'
+    }
+}
+
+taskB.mustRunAfter taskA
+//taskB.shouldRunAfter taskA
+
+// 2. 依赖关系决定执行顺序
+// 优先执行依赖的task
+// 如果依赖多个task，则按字母顺序执行
+task taskC {
+    dependsOn([taskB, taskA])
+    doLast {
+        println 'taskC'
+    }
+}
+taskC.dependsOn taskA,taskB
+
+// 输入输出决定执行顺序(经过验证，并不会决定执行顺序)
+ext.destFile = file('release.txt')
+task writeTask {
+    if (destFile != null && !destFile.exists()) {
+        destFile.createNewFile()
+    }
+    outputs.file destFile
+    doLast {
+        outputs.files.singleFile.text = "test input and output2"
+        println 'writeTask'
+    }
+}
+task readTask {
+    inputs.file destFile
+    doLast {
+        def file = inputs.files.singleFile
+        println file.text
+    }
+}
+task readWriteTestTask {
+    dependsOn([readTask, writeTask])
+    doLast {
+        println 'write read complete'
+    }
+}
+
+// 执行顺序的例子
+task unitTest {
+    doLast {
+        println 'unit test.'
+    }
+}
+
+task uiTest {
+    doLast {
+        println 'ui test.'
+    }
+}
+
+task doTests {
+    doLast {
+        println 'all tests completed.'
+    }
+}
+
+task mergeReports {
+    doLast {
+        println 'merge reports.'
+    }
+}
+
+uiTest.mustRunAfter unitTest
+doTests.dependsOn uiTest, unitTest
+doTests.finalizedBy mergeReports
